@@ -150,7 +150,8 @@ renderList highlightSort =
        StorePath
          { spName,
            spPayload = PathStats {psTotalSize, psAddedSize},
-           spRefs
+           spRefs,
+           spSignatures
          } ->
           let color =
                 if null spRefs
@@ -158,7 +159,13 @@ renderList highlightSort =
                   else identity
            in color $
                 B.hBox
-                  [ B.txt (storeNameToShortText spName)
+                  [
+                    if null spSignatures
+                      then
+                        B.txt "  "
+                      else
+                        B.txt "✓ ",
+                    B.txt (storeNameToShortText spName)
                       & underlineWhen SortOrderAlphabetical
                       & B.padRight (B.Pad 1)
                       & B.padRight B.Max,
@@ -375,7 +382,8 @@ renderInfoPane env =
    in B.vBox
         [ let (f, s) = storeNameToSplitShortText (spName selected)
            in B.txt f B.<+> underlineWhen SortOrderAlphabetical (B.txt s),
-          [ B.txt $ "NAR Size: " <> prettySize (spSize selected),
+          [ B.txt $ "Signatures: " <> if null (spSignatures selected) then "✗" else "✓",
+            B.txt $ "NAR Size: " <> prettySize (spSize selected),
             underlineWhen SortOrderClosureSize . B.txt $ "Closure Size: " <> prettySize (psTotalSize $ spPayload selected),
             underlineWhen SortOrderAddedSize . B.txt $ "Added Size: " <> prettySize (psAddedSize $ spPayload selected)
           ]
